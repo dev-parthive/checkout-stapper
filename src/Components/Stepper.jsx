@@ -1,9 +1,22 @@
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import "../App.css";
 const stepper = ({ stepsConfig = [] }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
+  const [margins, setMargins] = useState({
+    marginLeft: 0,
+    marginRight: 0,
+  });
+  const stepREf = useRef([]);
+  useEffect(() => {
+    setMargins({
+      marginLeft: stepREf.current[0].offsetWidth / 2,
+      marginRight: stepREf.current[stepsConfig.length - 1].offsetWidth / 2,
+    });
+  }, [stepREf, stepREf.current]);
+
   const ActiveComponent = stepsConfig[currentStep - 1]?.component;
+
   const handleBtn = () => {
     setCurrentStep((prevStep) => {
       if (prevStep === stepsConfig.length) {
@@ -27,6 +40,11 @@ const stepper = ({ stepsConfig = [] }) => {
           return (
             <div
               key={step.name}
+              ref={(el) => {
+                stepREf.current[index] = el;
+                console.log(stepREf.current);
+                return el;
+              }}
               className={`step ${
                 currentStep > index + 1 || isComplete ? "complete" : ""
               } ${currentStep === index + 1 ? "active" : ""} `}
@@ -44,7 +62,14 @@ const stepper = ({ stepsConfig = [] }) => {
         })}
 
         {/* progress bar  */}
-        <div className="progressbar">
+        <div
+          className="progressbar"
+          style={{
+            width: `calc(100% - ${margins.marginLeft + margins.marginRight}px)`,
+            marginLeft: margins.marginLeft,
+            marginRight: margins.marginRight,
+          }}
+        >
           <div
             className="progress"
             style={{ width: `${calculateProgressBarWidth()}%` }}
